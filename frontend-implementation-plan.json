@@ -1,0 +1,89 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Optimize storage performance: chunked uploads, Stable Memory, asset delivery, and frontend caching",
+  "requirements": [
+    {
+      "id": "REQ-4",
+      "summary": "Update the useChunkedUpload hook to pipeline chunk uploads with concurrent batches, showing per-chunk progress percentage and estimated time remaining in the UI.",
+      "acceptanceCriteria": [
+        "Chunk upload sends next chunk immediately upon acknowledgment without blocking.",
+        "Progress bar shows percentage of chunks uploaded out of total.",
+        "Estimated time remaining is displayed and updated in real time.",
+        "Upload can still be cancelled mid-flight with proper cleanup."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useChunkedUpload.ts",
+          "operation": "modify",
+          "description": "Refactor chunk upload logic to send chunks in a pipeline: immediately send the next chunk (or a small batch of 2-3 concurrent chunks) upon receiving acknowledgment from the previous one. Track per-chunk progress and calculate estimated time remaining based on upload speed. Ensure the cancellation flag is checked before each chunk send. Update the returned state to include chunksUploaded, totalChunks, percentage, and estimatedTimeRemaining fields."
+        },
+        {
+          "path": "frontend/src/components/ChunkedUpload.tsx",
+          "operation": "modify",
+          "description": "Update the ChunkedUpload UI to display the per-chunk progress percentage (e.g., 'Uploading chunk 5/20 (25%)') and the estimated time remaining (e.g., '~30 seconds remaining'). Wire these values from the updated useChunkedUpload hook state."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Implement a frontend caching layer using React Query's stale-while-revalidate strategy combined with in-memory and sessionStorage caching for file metadata and file chunk blobs, ensuring instant rendering from cache while silent revalidation runs in the background.",
+      "acceptanceCriteria": [
+        "File list query uses a staleTime of at least 60 seconds to avoid redundant refetches.",
+        "Downloaded chunk blobs are cached in a module-level Map and reused on repeat access.",
+        "File metadata (name, size, MIME type) is persisted in sessionStorage and rehydrated on page load.",
+        "Dashboard file list renders from cache instantly while background revalidation runs silently.",
+        "Cache is invalidated correctly after upload, delete, or logout events."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update the useListFiles query to set staleTime to at least 60 seconds (or higher) enabling stale-while-revalidate behavior. Ensure cache invalidation occurs on logout, upload completion, and file deletion by adding queryClient.invalidateQueries(['files']) calls in the appropriate mutation onSuccess handlers."
+        },
+        {
+          "path": "frontend/src/utils/chunkCache.ts",
+          "operation": "create",
+          "description": "Create a module-level Map to cache downloaded file chunk blobs keyed by fileId and chunkIndex (e.g., `Map<string, Blob>` where key is `${fileId}_${chunkIndex}`). Export getCachedChunk, setCachedChunk, and clearChunkCache functions. Also provide sessionStorage helpers to persist and rehydrate file metadata (filename, size, MIME type) on page load."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Integrate the new chunkCache utility into the useDownloadFile mutation: before calling the backend, check getCachedChunk; if found, return cached blob immediately. After successful backend fetch, call setCachedChunk to store the result. On logout or cache invalidation events, call clearChunkCache."
+        },
+        {
+          "path": "frontend/src/pages/DashboardPage.tsx",
+          "operation": "modify",
+          "description": "On component mount, call the sessionStorage rehydration helper from chunkCache.ts to restore file metadata into React Query cache if available. This ensures the file list renders instantly from persisted metadata while the query revalidates in the background."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Add a streaming file download utility that fetches file chunks sequentially from the backend, assembles them client-side into a Blob, and triggers a browser download, replacing any single-call blob download that could exceed ICP message size limits.",
+      "acceptanceCriteria": [
+        "Download fetches chunks one-by-one (or in small parallel batches) and assembles into a final Blob.",
+        "A download progress indicator is shown during chunk retrieval.",
+        "The assembled Blob is offered to the browser as a file download with the correct filename and MIME type.",
+        "Works correctly for files of any size without ICP message size errors."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useStreamingDownload.ts",
+          "operation": "create",
+          "description": "Create a custom hook useStreamingDownload that accepts fileId, token, shareToken, and file metadata (totalChunks, filename, mimeType). The hook fetches file chunks sequentially (or in small parallel batches of 2-3) from the backend actor using a new getFileChunk query method, assembles them into a final Blob, and triggers a browser download via a temporary anchor element. Track download progress (chunksDownloaded / totalChunks) and expose state for progress percentage, isDownloading, and error. Use the chunkCache utility from REQ-5 to cache and reuse downloaded chunks."
+        },
+        {
+          "path": "frontend/src/components/FileList.tsx",
+          "operation": "modify",
+          "description": "Replace the existing single-call downloadFile mutation with the new useStreamingDownload hook for the download action. Show a progress indicator (e.g., a linear progress bar or percentage label) while the download is in progress. Handle errors gracefully and display toast notifications on success or failure."
+        },
+        {
+          "path": "frontend/src/pages/SharePage.tsx",
+          "operation": "modify",
+          "description": "Replace the existing single-call download mechanism on the SharePage with the new useStreamingDownload hook. Display download progress and handle errors appropriately for public share link downloads."
+        }
+      ]
+    }
+  ]
+}

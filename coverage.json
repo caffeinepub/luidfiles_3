@@ -1,0 +1,100 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-28T16:58:24.497Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 6,
+    "implemented": 3,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Refactor the backend chunked upload system to use Stable Memory (via ExperimentalStableMemory or Region API) for storing file chunks and assembled file blobs, ensuring data persists across canister upgrades without heap overflow. Replace any heap-based blob storage with stable memory writes and reads.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Optimize the backend chunked upload API to support parallel chunk ingestion and out-of-order chunk receipt. Accept chunk index, total chunks, and file ID per call. Return acknowledgment immediately after each chunk is stored so the frontend can pipeline the next chunk without waiting for full processing.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Implement an efficient file streaming/delivery endpoint on the backend that serves file content in chunks via a getFileChunk(fileId, chunkIndex) query call, enabling the frontend to stream downloads without loading the entire file into memory at once.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Update the useChunkedUpload hook to pipeline chunk uploads — send the next chunk immediately after receiving acknowledgment from the previous one (or in small parallel batches of 2-3 concurrent chunks) to maximize throughput within ICP constraints. Show per-chunk progress percentage and estimated time remaining in the UI.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useChunkedUpload.ts",
+          "frontend/src/components/ChunkedUpload.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useChunkedUpload.ts",
+          "frontend/src/components/ChunkedUpload.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement a frontend caching layer using React Query's stale-while-revalidate strategy combined with in-memory and sessionStorage caching for file metadata and file chunk blobs. Cache downloaded file chunks in a Map keyed by fileId+chunkIndex so repeat downloads and previews load instantly without re-fetching from the canister.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/utils/chunkCache.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/DashboardPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/utils/chunkCache.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/DashboardPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-6",
+        "summary": "Add a streaming file download utility that fetches file chunks sequentially from the backend getFileChunk query, assembles them client-side into a Blob, and triggers a browser download — replacing any single-call blob download that could exceed ICP message size limits.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useStreamingDownload.ts",
+          "frontend/src/components/FileList.tsx",
+          "frontend/src/pages/SharePage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useStreamingDownload.ts",
+          "frontend/src/components/FileList.tsx",
+          "frontend/src/pages/SharePage.tsx"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/components/ChunkedUpload.tsx",
+    "frontend/src/components/FileList.tsx",
+    "frontend/src/hooks/useChunkedUpload.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useStreamingDownload.ts",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/SharePage.tsx",
+    "frontend/src/utils/chunkCache.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

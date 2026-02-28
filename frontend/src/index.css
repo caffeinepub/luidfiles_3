@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* LuidCorporation Brand: White & Neon Green */
+    --background: 1 0 0;
+    --foreground: 0.12 0 0;
+    --card: 0.98 0 0;
+    --card-foreground: 0.12 0 0;
+    --popover: 1 0 0;
+    --popover-foreground: 0.12 0 0;
+
+    /* Neon Green as primary */
+    --primary: 0.85 0.28 142;
+    --primary-foreground: 0.08 0 0;
+
+    --secondary: 0.95 0 0;
+    --secondary-foreground: 0.12 0 0;
+
+    --muted: 0.94 0 0;
+    --muted-foreground: 0.45 0 0;
+
+    --accent: 0.92 0.18 142;
+    --accent-foreground: 0.08 0 0;
+
+    --destructive: 0.577 0.245 27.325;
+    --destructive-foreground: 1 0 0;
+
+    --border: 0.88 0 0;
+    --input: 0.88 0 0;
+    --ring: 0.85 0.28 142;
+
+    --neon: 0.88 0.32 142;
+    --neon-dim: 0.78 0.26 142;
+    --neon-glow: 0.92 0.22 142;
+
+    --chart-1: 0.85 0.28 142;
+    --chart-2: 0.6 0.118 184.704;
+    --chart-3: 0.398 0.07 227.392;
+    --chart-4: 0.828 0.189 84.429;
+    --chart-5: 0.769 0.188 70.08;
+
+    --sidebar: 0.97 0 0;
+    --sidebar-foreground: 0.12 0 0;
+    --sidebar-primary: 0.85 0.28 142;
+    --sidebar-primary-foreground: 0.08 0 0;
+    --sidebar-accent: 0.93 0 0;
+    --sidebar-accent-foreground: 0.12 0 0;
+    --sidebar-border: 0.88 0 0;
+    --sidebar-ring: 0.85 0.28 142;
+  }
+
+  .dark {
+    --background: 0.1 0 0;
+    --foreground: 0.97 0 0;
+    --card: 0.14 0 0;
+    --card-foreground: 0.97 0 0;
+    --popover: 0.14 0 0;
+    --popover-foreground: 0.97 0 0;
+    --primary: 0.85 0.28 142;
+    --primary-foreground: 0.08 0 0;
+    --secondary: 0.2 0 0;
+    --secondary-foreground: 0.97 0 0;
+    --muted: 0.2 0 0;
+    --muted-foreground: 0.6 0 0;
+    --accent: 0.22 0.08 142;
+    --accent-foreground: 0.85 0.28 142;
+    --destructive: 0.704 0.191 22.216;
+    --destructive-foreground: 0.97 0 0;
+    --border: 1 0 0 / 10%;
+    --input: 1 0 0 / 15%;
+    --ring: 0.85 0.28 142;
+    --neon: 0.88 0.32 142;
+    --neon-dim: 0.78 0.26 142;
+    --neon-glow: 0.92 0.22 142;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .neon-text {
+    color: oklch(var(--neon));
+  }
+
+  .neon-border {
+    border-color: oklch(var(--neon));
+  }
+
+  .neon-bg {
+    background-color: oklch(var(--neon));
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 20px oklch(var(--neon) / 0.4), 0 0 40px oklch(var(--neon) / 0.2);
+  }
+
+  .neon-glow-text {
+    text-shadow: 0 0 20px oklch(var(--neon) / 0.6);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-slide-in-left {
+    animation: slideInLeft 0.6s ease-out forwards;
+  }
+
+  .animate-pulse-neon {
+    animation: pulseNeon 2s ease-in-out infinite;
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+  .delay-600 { animation-delay: 0.6s; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulseNeon {
+  0%, 100% { box-shadow: 0 0 10px oklch(0.88 0.32 142 / 0.4); }
+  50% { box-shadow: 0 0 30px oklch(0.88 0.32 142 / 0.8), 0 0 60px oklch(0.88 0.32 142 / 0.4); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes progressFill {
+  from { width: 0%; }
+}
+
+.progress-bar-fill {
+  transition: width 0.3s ease-out;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: oklch(0.94 0 0);
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.85 0.28 142);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.78 0.26 142);
+}

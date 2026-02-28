@@ -1,0 +1,140 @@
+{
+  "kind": "build_request",
+  "title": "Optimize storage performance: chunked uploads, Stable Memory, asset delivery, and frontend caching",
+  "projectName": "LuidFiles",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Refactor the backend chunked upload system to use Stable Memory (via ExperimentalStableMemory or Region API) for storing file chunks and assembled file blobs, ensuring data persists across canister upgrades without heap overflow. Replace any heap-based blob storage with stable memory writes and reads.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Configure o app para usar Stable Memory para os dados",
+          "Implemente o upload de arquivos grandes via Chunking (fragmentação) para evitar timeouts"
+        ]
+      },
+      "acceptanceCriteria": [
+        "File blobs and chunk buffers are stored in Stable Memory rather than heap variables.",
+        "Data survives canister upgrade cycles without loss.",
+        "Chunk assembly and finalization write directly to stable memory offsets.",
+        "Upload of files larger than 10 MB completes without timeout errors."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Optimize the backend chunked upload API to support parallel chunk ingestion and out-of-order chunk receipt. Accept chunk index, total chunks, and file ID per call. Return acknowledgment immediately after each chunk is stored so the frontend can pipeline the next chunk without waiting for full processing.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Implemente o upload de arquivos grandes via Chunking (fragmentação) para evitar timeouts"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes uploadChunk(fileId, chunkIndex, totalChunks, data: Blob) : async Result call.",
+        "Backend exposes finalizeUpload(fileId) : async Result to assemble chunks after all are received.",
+        "Each chunk call returns success/error within ICP message timeout limits.",
+        "Out-of-order chunks are tracked and assembled correctly on finalize."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Implement an efficient file streaming/delivery endpoint on the backend that serves file content in chunks via a getFileChunk(fileId, chunkIndex) query call, enabling the frontend to stream downloads without loading the entire file into memory at once.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "integre um Asset Canister eficiente para entrega rápida de arquivos"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend exposes a query method getFileChunk(fileId: Text, chunkIndex: Nat) : async ?Blob.",
+        "Backend exposes getFileMetadata(fileId: Text) returning total chunk count and MIME type.",
+        "Large files can be downloaded in sequential chunk requests without a single oversized message."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Update the useChunkedUpload hook to pipeline chunk uploads — send the next chunk immediately after receiving acknowledgment from the previous one (or in small parallel batches of 2-3 concurrent chunks) to maximize throughput within ICP constraints. Show per-chunk progress percentage and estimated time remaining in the UI.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Implemente o upload de arquivos grandes via Chunking (fragmentação) para evitar timeouts",
+          "Melhore a lógica de cache no frontend para que o carregamento seja instantâneo para o usuário"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Chunk upload sends next chunk immediately upon acknowledgment without blocking.",
+        "Progress bar shows percentage of chunks uploaded out of total.",
+        "Estimated time remaining is displayed and updated in real time.",
+        "Upload can still be cancelled mid-flight with proper cleanup."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement a frontend caching layer using React Query's stale-while-revalidate strategy combined with in-memory and sessionStorage caching for file metadata and file chunk blobs. Cache downloaded file chunks in a Map keyed by fileId+chunkIndex so repeat downloads and previews load instantly without re-fetching from the canister.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "Melhore a lógica de cache no frontend para que o carregamento seja instantâneo para o usuário"
+        ]
+      },
+      "acceptanceCriteria": [
+        "File list query uses a staleTime of at least 60 seconds to avoid redundant refetches.",
+        "Downloaded chunk blobs are cached in a module-level Map and reused on repeat access.",
+        "File metadata (name, size, MIME type) is persisted in sessionStorage and rehydrated on page load.",
+        "Dashboard file list renders from cache instantly while background revalidation runs silently.",
+        "Cache is invalidated correctly after upload, delete, or logout events."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Add a streaming file download utility that fetches file chunks sequentially from the backend getFileChunk query, assembles them client-side into a Blob, and triggers a browser download — replacing any single-call blob download that could exceed ICP message size limits.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "integre um Asset Canister eficiente para entrega rápida de arquivos"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Download fetches chunks one-by-one (or in small parallel batches) and assembles into a final Blob.",
+        "A download progress indicator is shown during chunk retrieval.",
+        "The assembled Blob is offered to the browser as a file download with the correct filename and MIME type.",
+        "Works correctly for files of any size without ICP message size errors."
+      ]
+    }
+  ],
+  "constraints": [
+    "All backend logic must remain in the single main actor (backend/main.mo).",
+    "Do not use external storage services — all data must remain on ICP stable memory.",
+    "Frontend immutable paths (useInternetIdentity, useActor, main.tsx, ui components) must not be modified.",
+    "Chunk size must not exceed 2 MB per ICP message to stay within protocol limits."
+  ],
+  "nonGoals": [
+    "Replacing ICP with AWS, GCP, or any external cloud provider.",
+    "Real-time WebSocket or push-based upload progress.",
+    "Video streaming or media transcoding.",
+    "Changing authentication system or user role model."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

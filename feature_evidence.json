@@ -1,0 +1,70 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-update-the-usechunkedupload-hook-to-pipeline-chunk-uploads-send-the-next-chunk-immediately-after-receiving-acknowledgment-from-the-previous-one-or-in-small-parallel-batches-of-2-3-concurrent-chunks-to-maximize-throughput-within-icp-constraints-show-per-chunk-progress-percentage-and-estimated-time-remaining-in-the-ui",
+      "featureTitle": "Update the useChunkedUpload hook to pipeline chunk uploads — send the next chunk immediately after receiving acknowledgment from the previous one (or in small parallel batches of 2-3 concurrent chunks) to maximize throughput within ICP constraints. Show per-chunk progress percentage and estimated time remaining in the UI.",
+      "files": [
+        "frontend/src/components/ChunkedUpload.tsx",
+        "frontend/src/hooks/useChunkedUpload.ts"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-frontend-caching-layer-using-react-query-s-stale-while-revalidate-strategy-combined-with-in-memory-and-sessionstorage-caching-for-file-metadata-and-file-chunk-blobs-cache-downloaded-file-chunks-in-a-map-keyed-by-fileid-chunkindex-so-repeat-downloads-and-previews-load-instantly-without-re-fetching-from-the-canister",
+      "featureTitle": "Implement a frontend caching layer using React Query's stale-while-revalidate strategy combined with in-memory and sessionStorage caching for file metadata and file chunk blobs. Cache downloaded file chunks in a Map keyed by fileId+chunkIndex so repeat downloads and previews load instantly without re-fetching from the canister.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/DashboardPage.tsx",
+        "frontend/src/utils/chunkCache.ts"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-a-streaming-file-download-utility-that-fetches-file-chunks-sequentially-from-the-backend-getfilechunk-query-assembles-them-client-side-into-a-blob-and-triggers-a-browser-download-replacing-any-single-call-blob-download-that-could-exceed-icp-message-size-limits",
+      "featureTitle": "Add a streaming file download utility that fetches file chunks sequentially from the backend getFileChunk query, assembles them client-side into a Blob, and triggers a browser download — replacing any single-call blob download that could exceed ICP message size limits.",
+      "files": [
+        "frontend/src/components/FileList.tsx",
+        "frontend/src/hooks/useStreamingDownload.ts",
+        "frontend/src/pages/SharePage.tsx"
+      ],
+      "components": [
+        "blob-storage@4.0.0",
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

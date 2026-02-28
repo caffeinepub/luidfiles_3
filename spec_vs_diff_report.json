@@ -1,0 +1,63 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-28T16:58:24.494Z",
+  "summary": "The diff implements significant frontend optimizations (REQ-4, REQ-5, partial REQ-6) and some backend chunked upload API structure. However, the critical backend requirements REQ-1 (Stable Memory), and REQ-3 (getFileChunk/getFileMetadata query endpoints) are not clearly implemented. The backend main.mo diff shows heap-based maps still in use with no Stable Memory imports or writes visible. The useStreamingDownload hook still uses a single downloadFile call rather than true per-chunk streaming from a getFileChunk backend endpoint, making REQ-6 only partially fulfilled.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Refactor backend to use Stable Memory (ExperimentalStableMemory or Region API) for storing file chunks and assembled file blobs, replacing heap-based blob storage.",
+      "reason": "The backend/main.mo diff still shows heap-based Map storage (chunks = Map.empty<Text, Chunk>()) with no Stable Memory imports, no stable memory writes/reads, and no preupgrade/postupgrade hooks for persistence. Acceptance criteria requiring data survival across upgrades and chunk assembly writing to stable memory offsets are not met.",
+      "evidence": [
+        "backend/main.mo"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Backend must expose getFileChunk(fileId: Text, chunkIndex: Nat) : async ?Blob query method and getFileMetadata(fileId: Text) returning total chunk count and MIME type.",
+      "reason": "No getFileChunk or getFileMetadata methods are visible in the backend/main.mo diff. The useStreamingDownload hook explicitly notes these endpoints do not exist yet and falls back to the existing downloadFile call, confirming these backend endpoints were not implemented.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useStreamingDownload.ts"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "Streaming download utility must fetch file chunks one-by-one or in small parallel batches from the backend getFileChunk query and assemble them client-side to avoid ICP message size limits.",
+      "reason": "The useStreamingDownload hook uses actor.downloadFile() (a single full-file call) rather than fetching individual chunks via getFileChunk. The hook's own comments acknowledge this limitation. ICP message size limits are not avoided for large files.",
+      "evidence": [
+        "frontend/src/hooks/useStreamingDownload.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Simulated fake download progress ticks using setInterval while a single downloadFile backend call runs, presenting artificial progress percentages unrelated to actual chunk retrieval.",
+      "reason": "The build request requires real per-chunk download progress from actual chunk fetching. The implementation uses a fake tick interval to simulate progress during a monolithic download call, which was not requested and is misleading.",
+      "evidence": [
+        "frontend/src/hooks/useStreamingDownload.ts"
+      ]
+    },
+    {
+      "description": "SharePage scans fileIds 1 through 500 in a loop as a fallback to find a file matching a share token.",
+      "reason": "This brute-force file ID scanning behavior was not requested in any requirement and represents a significant undocumented behavior that could cause serious performance issues.",
+      "evidence": [
+        "frontend/src/pages/SharePage.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.85,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/ChunkedUpload.tsx",
+    "frontend/src/components/FileList.tsx",
+    "frontend/src/hooks/useChunkedUpload.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useStreamingDownload.ts",
+    "frontend/src/pages/DashboardPage.tsx",
+    "frontend/src/pages/SharePage.tsx",
+    "frontend/src/utils/chunkCache.ts",
+    "project_state.json"
+  ]
+}

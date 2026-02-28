@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "File storage platform (LuidFiles/Caffeine) running on Internet Computer Protocol (ICP) with Motoko backend. Focus on optimizing storage performance with chunked uploads, Stable Memory, Asset Canister integration, and frontend caching.",
+  "architectural_notes": [
+    "Backend runs on Internet Computer Protocol (ICP) using Motoko canisters — no traditional servers (AWS, GCP, etc.)",
+    "ICP has ~2MB per-call message limit; large files must be uploaded in chunks",
+    "Use Stable Memory for persistent data to survive canister upgrades",
+    "Asset Canister should be used for efficient static/file delivery"
+  ],
+  "known_issues": [
+    "Upload speed is inherently limited by ICP subnet latency (~1-2s per transaction) compared to centralized providers"
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-update-the-usechunkedupload-hook-to-pipeline-chunk-uploads-send-the-next-chunk-immediately-after-receiving-acknowledgment-from-the-previous-one-or-in-small-parallel-batches-of-2-3-concurrent-chunks-to-maximize-throughput-within-icp-constraints-show-per-chunk-progress-percentage-and-estimated-time-remaining-in-the-ui",
+      "title": "Update the useChunkedUpload hook to pipeline chunk uploads — send the next chunk immediately after receiving acknowledgment from the previous one (or in small parallel batches of 2-3 concurrent chunks) to maximize throughput within ICP constraints. Show per-chunk progress percentage and estimated time remaining in the UI.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-frontend-caching-layer-using-react-query-s-stale-while-revalidate-strategy-combined-with-in-memory-and-sessionstorage-caching-for-file-metadata-and-file-chunk-blobs-cache-downloaded-file-chunks-in-a-map-keyed-by-fileid-chunkindex-so-repeat-downloads-and-previews-load-instantly-without-re-fetching-from-the-canister",
+      "title": "Implement a frontend caching layer using React Query's stale-while-revalidate strategy combined with in-memory and sessionStorage caching for file metadata and file chunk blobs. Cache downloaded file chunks in a Map keyed by fileId+chunkIndex so repeat downloads and previews load instantly without re-fetching from the canister.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-streaming-file-download-utility-that-fetches-file-chunks-sequentially-from-the-backend-getfilechunk-query-assembles-them-client-side-into-a-blob-and-triggers-a-browser-download-replacing-any-single-call-blob-download-that-could-exceed-icp-message-size-limits",
+      "title": "Add a streaming file download utility that fetches file chunks sequentially from the backend getFileChunk query, assembles them client-side into a Blob, and triggers a browser download — replacing any single-call blob download that could exceed ICP message size limits.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement chunked file upload to handle large files and avoid ICP timeouts",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Configure app to use Stable Memory for persistent data storage on ICP",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Integrate efficient Asset Canister for fast file delivery",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Improve frontend cache logic for near-instant load times",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Refactor the backend chunked upload system to use Stable Memory (via ExperimentalStableMemory or Region API) for storing file chunks and assembled file blobs, ensuring data persists across canister upgrades without heap overflow. Replace any heap-based blob storage with stable memory writes and reads.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Optimize the backend chunked upload API to support parallel chunk ingestion and out-of-order chunk receipt. Accept chunk index, total chunks, and file ID per call. Return acknowledgment immediately after each chunk is stored so the frontend can pipeline the next chunk without waiting for full processing.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Implement an efficient file streaming/delivery endpoint on the backend that serves file content in chunks via a getFileChunk(fileId, chunkIndex) query call, enabling the frontend to stream downloads without loading the entire file into memory at once.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Caffeine",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
